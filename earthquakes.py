@@ -77,6 +77,8 @@ def get_maximum(data):
 
 # With all the above functions defined, we can now call them and get the result
 earthquake_data = get_data()
-print(f"Loaded {count_earthquakes(data)}")
-max_magnitude, max_location = get_maximum(data)
-print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
+print(f"Loaded {count_earthquakes(earthquake_data)}")
+print(f"the maxium magnitude is {get_max_magnitude(earthquake_data)}")
+max_magnitude, max_location = get_maximum(earthquake_data)
+print(f"The strongest earthquake was at {max_location[:]} with magnitude {max_magnitude}")
+
