@@ -30,7 +30,8 @@ def get_data():
     # We need to interpret the text to get values that we can work with.
     # What format is the text in? How can we load the values?
     return json.loads(response.text)
-    
+
+
 def count_earthquakes(earthquake_data):
     """Get the total number of earthquakes in the response."""
     return len(earthquake_data['features'])
@@ -38,22 +39,8 @@ def count_earthquakes(earthquake_data):
 
 def get_max_magnitude(earthquake_data):
     """Retrive the magnitude of an earthquake item."""
-    return max([earthquake_data['features'][n]['properties']['mag'] for n in range(count_earthquakes(earthquake_data))])
-
-def get_max_magnitude(earthquake_data):
-    """Retrive the magnitude of an earthquake item."""
     return max([earthquake_data['features'][n]['properties']['mag'] 
                 for n in range(count_earthquakes(earthquake_data))])
-
-
-def get_location(earthquake_no):
-    """Retrieve the latitude and longitude of an earthquake item."""
-    # There are three coordinates, but we don't care about the third (altitude)
-    # I have included the place as well, so that it is more readable
-    cord1 = earthquake_data['features'][earthquake_no]['geometry']['coordinates'][0]
-    cord2 = earthquake_data['features'][earthquake_no]['geometry']['coordinates'][1] 
-    place = earthquake_data['features'][earthquake_no]['properties']['place']
-    return [cord1, cord2, place]
 
 
 def get_location(earthquake_no):
