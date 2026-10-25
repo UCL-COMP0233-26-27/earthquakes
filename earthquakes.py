@@ -38,7 +38,7 @@ def count_earthquakes(earthquake_data):
 
 
 def get_max_magnitude(earthquake_data):
-    """Retrive the magnitude of an earthquake item."""
+"""Retrieve the maximum magnitude present in the earthquake data."""
     return max([earthquake_data['features'][n]['properties']['mag'] 
                 for n in range(count_earthquakes(earthquake_data))])
 
