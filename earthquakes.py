@@ -3,7 +3,7 @@
 # However, we will use a more powerful and simpler library called requests.
 # This is external library that you may need to install first.
 import requests
-
+import json
 
 def get_data():
     # With requests, we can ask the web service for the data.
@@ -23,36 +23,42 @@ def get_data():
 
     # The response we get back is an object with several fields.
     # The actual contents we care about are in its text field:
-    text = response.text
+    text = response.text # GeoJSON format - documented at https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
     # To understand the structure of this text, you may want to save it
     # to a file and open it in VS Code or a browser.
     # See the README file for more information.
-    ...
-
+    data_dict = json.loads(text)
     # We need to interpret the text to get values that we can work with.
     # What format is the text in? How can we load the values?
-    return ...
+    return data_dict
 
 def count_earthquakes(data):
     """Get the total number of earthquakes in the response."""
-    return ...
+    return len(data["features"])
 
 
 def get_magnitude(earthquake):
     """Retrive the magnitude of an earthquake item."""
-    return ...
+    return earthquake["properties"]["mag"]
 
 
 def get_location(earthquake):
     """Retrieve the latitude and longitude of an earthquake item."""
     # There are three coordinates, but we don't care about the third (altitude)
-    return ...
+    longitude = earthquake["geometry"]["coordinates"][0]
+    latitude = earthquake["geometry"]["coordinates"][1]
+    return (longitude, latitude)
 
 
 def get_maximum(data):
     """Get the magnitude and location of the strongest earthquake in the data."""
-    ...
-
+    strongest_magnitude = 0
+    for earthquake in data["features"]:
+        current_magnitude = get_magnitude(earthquake)
+        if current_magnitude > strongest_magnitude:
+            strongest_earthquake = earthquake
+            strongest_magnitude = current_magnitude
+    return strongest_magnitude, get_location(strongest_earthquake)
 
 # With all the above functions defined, we can now call them and get the result
 data = get_data()
