@@ -12,7 +12,6 @@ import requests
 # actual analysis that we want to do here.
 from _utils import Earthquake, EQDataset, read_cli_args
 
-
 def get_data(save: Path | None = None) -> EQDataset:
     # With requests, we can ask the web service for the data.
     # Can you understand the parameters we are passing here?
@@ -97,10 +96,12 @@ def get_maximum(data: EQDataset) -> tuple[float, list[float]]:
 if __name__ == "__main__":
     args = read_cli_args()
 
-    data = get_data(args.save)
+    data = get_data(Path(__file__).with_name("earthquakes.json"))
     print(f"Loaded {count_earthquakes(data)}")
 
     max_magnitude, max_location = get_maximum(data)
     print(
         f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}"
     )
+
+
