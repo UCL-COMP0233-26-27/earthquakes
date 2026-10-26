@@ -4,6 +4,9 @@
 # This is external library that you may need to install first.
 import requests
 import json
+import datetime
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def get_data():
     # With requests, we can ask the web service for the data.
@@ -57,8 +60,48 @@ def get_maximum(data):
     locations = [get_location(earthquake) for earthquake in data["features"] if earthquake["properties"]["mag"] == max_magnitude]
     return max_magnitude, locations
 
+def get_year(data):
+    years = [datetime.date.fromtimestamp(earthquake['properties']['time']/1000).strftime('%Y') for earthquake in data['features']]
+    return years
+    #time = []
+    #for earthquake in data['features']:
+    #    epoch= earthquake['properties']['time']
+    #    utc = datetime.date.fromtimestamp(epoch/1000) 
+    #    print(utc)
+    #    times.append(utc)
+
+def get_frequency(years):
+    unique_years = set(years)
+    freq = {}
+    for year in unique_years:
+        # freuency = {year: count}
+        freq[year] = years.count(year)
+    return freq 
+
+
+
 # With all the above functions defined, we can now call them and get the result
 data = get_data()
 print(f"Loaded {count_earthquakes(data)}")
 max_magnitude, max_location = get_maximum(data)
 print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
+
+years = get_year(data)
+frequency_data = get_frequency(years)
+
+#df = pd.DataFrame({
+#    'x_values': frequency_data.keys(),
+#    'y_values': frequency_data.values()
+#                  })
+# fig, ax = plt.subplots()
+# ax.scatter(
+#     'x_values', 'y_values',
+#     data = df,
+#     marker='o'
+# )
+# plt.show()
+
+plt.figure()
+plt.bar(frequency_data.keys(), frequency_data.values())
+plt.tick_params(rotation=45)
+plt.show()
