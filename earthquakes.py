@@ -3,7 +3,10 @@
 # However, we will use a more powerful and simpler library called requests.
 # This is external library that you may need to install first.
 import requests
-
+import json
+import datetime
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def get_data():
     # With requests, we can ask the web service for the data.
@@ -23,35 +26,58 @@ def get_data():
 
     # The response we get back is an object with several fields.
     # The actual contents we care about are in its text field:
-    text = response.text
+    text = json.loads(response.text)
     # To understand the structure of this text, you may want to save it
     # to a file and open it in VS Code or a browser.
     # See the README file for more information.
-    ...
-
+    with open("earthquake_data.json", "w") as f:
+        json.dump(text, f, indent=4)
     # We need to interpret the text to get values that we can work with.
     # What format is the text in? How can we load the values?
-    return ...
+    return text 
 
 def count_earthquakes(data):
     """Get the total number of earthquakes in the response."""
-    return ...
+    return len(data["features"])
 
 
 def get_magnitude(earthquake):
     """Retrive the magnitude of an earthquake item."""
-    return ...
+    return earthquake["properties"]["mag"]
 
 
 def get_location(earthquake):
     """Retrieve the latitude and longitude of an earthquake item."""
     # There are three coordinates, but we don't care about the third (altitude)
-    return ...
+    latitude = earthquake["geometry"]["coordinates"][0]
+    longitude = earthquake["geometry"]["coordinates"][1]
+    return (latitude, longitude)
 
 
 def get_maximum(data):
     """Get the magnitude and location of the strongest earthquake in the data."""
-    ...
+    max_magnitude = max([get_magnitude(earthquake) for earthquake in data["features"]])
+    locations = [get_location(earthquake) for earthquake in data["features"] if earthquake["properties"]["mag"] == max_magnitude]
+    return max_magnitude, locations
+
+def get_year(data):
+    years = [datetime.date.fromtimestamp(earthquake['properties']['time']/1000).strftime('%Y') for earthquake in data['features']]
+    return years
+    #time = []
+    #for earthquake in data['features']:
+    #    epoch= earthquake['properties']['time']
+    #    utc = datetime.date.fromtimestamp(epoch/1000) 
+    #    print(utc)
+    #    times.append(utc)
+
+def get_frequency(years):
+    unique_years = set(years)
+    freq = {}
+    for year in unique_years:
+        # freuency = {year: count}
+        freq[year] = years.count(year)
+    return freq 
+
 
 
 # With all the above functions defined, we can now call them and get the result
@@ -59,3 +85,23 @@ data = get_data()
 print(f"Loaded {count_earthquakes(data)}")
 max_magnitude, max_location = get_maximum(data)
 print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
+
+years = get_year(data)
+frequency_data = get_frequency(years)
+
+#df = pd.DataFrame({
+#    'x_values': frequency_data.keys(),
+#    'y_values': frequency_data.values()
+#                  })
+# fig, ax = plt.subplots()
+# ax.scatter(
+#     'x_values', 'y_values',
+#     data = df,
+#     marker='o'
+# )
+# plt.show()
+
+plt.figure()
+plt.bar(frequency_data.keys(), frequency_data.values())
+plt.tick_params(rotation=45)
+plt.show()
