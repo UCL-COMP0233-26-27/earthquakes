@@ -93,6 +93,102 @@ def get_maximum(data: EQDataset) -> tuple[float, list[float]]:
     return get_magnitude(strongest_earthquake), get_location(strongest_earthquake)
 
 
+########################### issue 12 code start ##########################################
+
+from datetime import datetime, timezone
+from collections import defaultdict
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+
+# plot: the frequency (number) of earthquakes per year
+
+def get_year(earthquake: Earthquake) -> int:
+    timestamp = earthquake["properties"]["time"]
+
+    date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc)
+    # timestamp returns ms
+    year = date.year
+    return year
+
+def count_by_year(data: EQDataset) -> dict[int, int]:
+    yearly_counts = defaultdict(int)
+    # defaultdict: when visit an nonexistent key, automatically create the key, value = 0
+
+    for earthquake in data["features"]:
+        year = get_year(earthquake)
+        yearly_counts[year] += 1
+
+    yearly_counts = dict(sorted(yearly_counts.items()))
+    return yearly_counts
+
+def average_magnitude_by_year(data: EQDataset) -> dict[int, float]:
+    # magnitude量级
+    magnitude_totals_yearly = defaultdict(float)
+    yearly_counts = defaultdict(int)
+
+    for earthquake in data["features"]:
+        magnitude = get_magnitude(earthquake)
+
+        if magnitude is None:
+            continue
+        
+        year = get_year(earthquake)
+        magnitude_totals_yearly[year] += magnitude
+        yearly_counts[year] += 1
+    yearly_counts = dict(sorted(yearly_counts.items()))
+    magnitude_totals_yearly = dict(sorted(magnitude_totals_yearly.items()))
+
+    yearly_average = {}
+    for year in yearly_counts:
+        yearly_average[year] = (magnitude_totals_yearly[year] / yearly_counts[year])
+    
+    return yearly_average
+
+def plot_earthquake_frequency(data: EQDataset) -> None:
+    """Plot the number of earthquakes per year."""
+    yearly_counts = count_by_year(data)
+
+    years = list(yearly_counts.keys())
+    counts = list(yearly_counts.values())
+
+    plt.figure()
+    plt.bar(years, counts)
+
+    plt.xlabel("Year")
+    plt.ylabel("Number of Earthquakes")
+    plt.title("Earthquake Frequency per Year")
+
+    plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.tight_layout()
+
+    plt.savefig("./earthquake_frequency.png", dpi=300)
+    # plt.show()
+
+
+def plot_average_magnitude(data: EQDataset) -> None:
+    """Plot the average earthquake magnitude per year."""
+    yearly_averages = average_magnitude_by_year(data)
+
+    years = list(yearly_averages.keys())
+    averages = list(yearly_averages.values())
+
+    plt.figure()
+    plt.plot(years, averages, marker="o")
+
+    plt.xlabel("Year")
+    plt.ylabel("Average Magnitude")
+    plt.title("Average Earthquake Magnitude per Year")
+
+    plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.tight_layout()
+
+    plt.savefig("./average_magnitude.png", dpi=300)
+    # plt.show()
+
+
+########################### issue 12 code end ##########################################
+
 # With all the above functions defined, we can now call them and get the result
 if __name__ == "__main__":
     args = read_cli_args()
@@ -104,3 +200,6 @@ if __name__ == "__main__":
     print(
         f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}"
     )
+
+    plot_earthquake_frequency(data)
+    plot_average_magnitude(data)
