@@ -60,7 +60,7 @@ def count_earthquakes(data: EQDataset) -> int:
     return data["metadata"]["count"]
 
 
-def get_magnitude(earthquake: Earthquake) -> float:
+def get_magnitude(earthquake: Earthquake) -> float: # can annotate variable to know what type it should be
     """Retrieve the magnitude of an earthquake item.
 
     An earthquake item is a single entry in `data["features"]`.
@@ -97,7 +97,7 @@ def get_maximum(data: EQDataset) -> tuple[float, list[float]]:
 if __name__ == "__main__":
     args = read_cli_args()
 
-    data = get_data(args.save)
+    data = get_data(Path("earthwaukes.json"))
     print(f"Loaded {count_earthquakes(data)}")
 
     max_magnitude, max_location = get_maximum(data)

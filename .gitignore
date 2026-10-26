@@ -1,5 +1,5 @@
 # Ignore JSON files in this repository
-**/*.json
+**/*.json # in any folder, don't commit json
 
 # You can also use gitignore.io to generate suitable gitignore files for your
 # projects.
