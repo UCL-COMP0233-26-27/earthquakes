@@ -1,61 +1,186 @@
-# The Python standard library includes some functionality for communicating
-# over the Internet.
-# However, we will use a more powerful and simpler library called requests.
-# This is external library that you may need to install first.
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import requests
 
 
+YEARS = list(range(2000, 2019))
+DATA_FILE = Path(__file__).with_name("earthquakes.json")
+PLOT_DIR = Path(__file__).with_name("plots")
+
+
 def get_data():
-    # With requests, we can ask the web service for the data.
-    # Can you understand the parameters we are passing here?
+    """Read the saved data, or download it from USGS."""
+    if DATA_FILE.exists():
+        with DATA_FILE.open(encoding="utf-8") as f:
+            return json.load(f)
+
     response = requests.get(
-        "http://earthquake.usgs.gov/fdsnws/event/1/query.geojson",
+        "https://earthquake.usgs.gov/fdsnws/event/1/query",
         params={
-            'starttime': "2000-01-01",
+            "format": "geojson",
+            "starttime": "2000-01-01",
+            "endtime": "2018-10-11",
             "maxlatitude": "58.723",
             "minlatitude": "50.008",
             "maxlongitude": "1.67",
             "minlongitude": "-9.756",
             "minmagnitude": "1",
-            "endtime": "2018-10-11",
-            "orderby": "time-asc"}
+            "orderby": "time-asc",
+        },
+        timeout=30,
     )
+    response.raise_for_status()
+    data = response.json()
 
-    # The response we get back is an object with several fields.
-    # The actual contents we care about are in its text field:
-    text = response.text
-    # To understand the structure of this text, you may want to save it
-    # to a file and open it in VS Code or a browser.
-    # See the README file for more information.
-    ...
+    with DATA_FILE.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
 
-    # We need to interpret the text to get values that we can work with.
-    # What format is the text in? How can we load the values?
-    return ...
+    return data
 
-def count_earthquakes(data):
-    """Get the total number of earthquakes in the response."""
-    return ...
+
+def get_year(earthquake):
+    """Extract the year in which an earthquake happened."""
+    timestamp = earthquake["properties"]["time"]
+
+    # Convert milliseconds to seconds and use UTC.
+    return datetime.fromtimestamp(
+        timestamp / 1000, tz=timezone.utc
+    ).year
 
 
 def get_magnitude(earthquake):
-    """Retrive the magnitude of an earthquake item."""
-    return ...
+    """Retrieve the magnitude of an earthquake item."""
+    return earthquake["properties"]["mag"]
 
 
-def get_location(earthquake):
-    """Retrieve the latitude and longitude of an earthquake item."""
-    # There are three coordinates, but we don't care about the third (altitude)
-    return ...
+def get_magnitudes_per_year(earthquakes):
+    """Return a dictionary of years and lists of magnitudes."""
+    magnitudes_per_year = {year: [] for year in YEARS}
+
+    for earthquake in earthquakes:
+        year = get_year(earthquake)
+        magnitude = get_magnitude(earthquake)
+
+        if magnitude is not None:
+            magnitudes_per_year[year].append(magnitude)
+
+    return magnitudes_per_year
 
 
-def get_maximum(data):
-    """Get the magnitude and location of the strongest earthquake in the data."""
-    ...
+def plot_average_magnitude_per_year(earthquakes):
+    magnitudes_per_year = get_magnitudes_per_year(earthquakes)
+    averages = []
+
+    for year in YEARS:
+        magnitudes = magnitudes_per_year[year]
+
+        if magnitudes:
+            averages.append(sum(magnitudes) / len(magnitudes))
+        else:
+            # Zero is a plotting placeholder, not a measured mean.
+            averages.append(0)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    ax.plot(
+        YEARS,
+        averages,
+        marker="o",
+        color="darkorange",
+        linewidth=2,
+    )
+
+    ax.set_title("Average earthquake magnitude per year")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Mean magnitude")
+    ax.set_xticks(YEARS)
+    ax.tick_params(axis="x", labelrotation=45)
+
+    # Leave space below zero so the zero markers remain visible.
+    ax.set_ylim(bottom=-0.15)
+    ax.set_axisbelow(True)
+    ax.grid(axis="y", alpha=0.3)
+
+    fig.text(
+        0.5,
+        0.02,
+        "2018 ends at 11 Oct 00:00 UTC. "
+        "Zero is a placeholder for years with no valid magnitudes.",
+        ha="center",
+        fontsize=9,
+    )
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+
+    PLOT_DIR.mkdir(exist_ok=True)
+    fig.savefig(
+        PLOT_DIR / "average_magnitude_per_year.png",
+        dpi=200,
+    )
 
 
-# With all the above functions defined, we can now call them and get the result
-data = get_data()
-print(f"Loaded {count_earthquakes(data)}")
-max_magnitude, max_location = get_maximum(data)
-print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
+def plot_number_per_year(earthquakes):
+    counts_per_year = {year: 0 for year in YEARS}
+
+    for earthquake in earthquakes:
+        year = get_year(earthquake)
+        counts_per_year[year] += 1
+
+    counts = [counts_per_year[year] for year in YEARS]
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    ax.bar(
+        YEARS,
+        counts,
+        color="steelblue",
+        width=0.75,
+    )
+
+    ax.set_title("Number of earthquakes per year")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Number of earthquakes")
+    ax.set_xticks(YEARS)
+    ax.tick_params(axis="x", labelrotation=45)
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_ylim(0, max(max(counts), 1) * 1.15)
+    ax.set_axisbelow(True)
+    ax.grid(axis="y", alpha=0.3)
+
+    for year, count in zip(YEARS, counts):
+        ax.text(
+            year,
+            count + 0.25,
+            str(count),
+            ha="center",
+            fontsize=9,
+        )
+
+    fig.text(
+        0.5,
+        0.02,
+        "2018 data end at 11 Oct 00:00 UTC.",
+        ha="center",
+        fontsize=9,
+    )
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+
+    PLOT_DIR.mkdir(exist_ok=True)
+    fig.savefig(
+        PLOT_DIR / "number_per_year.png",
+        dpi=200,
+    )
+
+
+if __name__ == "__main__":
+    quakes = get_data()["features"]
+    print(f"Loaded {len(quakes)} earthquakes")
+
+    plot_number_per_year(quakes)
+    plot_average_magnitude_per_year(quakes)
+
+    print(f"Saved both plots in: {PLOT_DIR}")
+    plt.show()
