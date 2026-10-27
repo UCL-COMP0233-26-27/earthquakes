@@ -37,6 +37,7 @@ def get_data():
     # What format is the text in? How can we load the values?
     return data
 
+# look at the .json file to find where the sepcific data is stored
 def count_earthquakes(data):
     """Get the total number of earthquakes in the response."""
     return data["metadata"]["count"]
