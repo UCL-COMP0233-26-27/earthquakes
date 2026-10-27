@@ -84,14 +84,35 @@ def get_year(earthquake):
  1000)
     return earthquake_date.year
 
-    earthquake_per_year = []
-    date_years = list(range(2000, 2019))
-    for year in date_years:
+# the query asks for earthquakes from 2000 up to 2018
+YEARS = list(range(2000, 2019))
+
+
+def get_earthquakes_per_year(data):
+    """For each year, count the number of earthquakes."""
+    earthquakes_per_year = []
+    for year in YEARS:
         earthquakes_this_year = 0
         for earthquake in data["features"]:
-            year_of_eq = get_year(earthquake)
-            if year_of_eq == year:
+            if get_year(earthquake) == year:
                 earthquakes_this_year += 1
-                earthquake_per_year.append(earthquakes_this_year)
+        # append once per year, after all the earthquakes have been checked
+        earthquakes_per_year.append(earthquakes_this_year)
+    return earthquakes_per_year
 
-   
+def get_average_magnitude_per_year(data):
+    """For each year, find the average magnitude of the earth
+quakes."""
+    average_magnitude_per_year = []
+    for year in YEARS:
+        magnitudes_this_year = []
+        for earthquake in data["features"]:
+            if get_year(earthquake) == year:
+                magnitudes_this_year.append(get_magnitude(earthquake))
+        # a year with no earthquakes has no average, so leavea gap in the graph
+        if magnitudes_this_year:
+            average = sum(magnitudes_this_year) / len(magnitudes_this_year)
+        else:
+            average = float("nan")
+        average_magnitude_per_year.append(average)
+    return average_magnitude_per_year
