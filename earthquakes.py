@@ -116,3 +116,42 @@ quakes."""
             average = float("nan")
         average_magnitude_per_year.append(average)
     return average_magnitude_per_year
+
+
+def plot_earthquakes_per_year(data):
+    """Bar chart of the number of earthquakes in each year."""
+    counts = get_earthquakes_per_year(data)
+    fig, ax = plt.subplots(figsize=(9, 4.5))
+    ax.bar(YEARS, counts, color="#2a78d6", width=0.7)
+    ax.set_title("Number of earthquakes per year (UK, magnitude 1+)")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Number of earthquakes")
+    ax.set_xticks(YEARS)
+    ax.tick_params(axis="x", labelrotation=45)
+    ax.grid(axis="y", color="#e6e6e3")
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig("earthquakes_per_year.png", dpi=150)
+
+
+def plot_average_magnitude_per_year(data):
+    """Line chart of the average earthquake magnitude in eachyear."""
+    averages = get_average_magnitude_per_year(data)
+    fig, ax = plt.subplots(figsize=(9, 4.5))
+    ax.plot(YEARS, averages, color="#2a78d6", linewidth=2, marker="o", markersize=6)
+    ax.set_title("Average earthquake magnitude per year (UK,magnitude 1+)")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Average magnitude")
+    ax.set_xticks(YEARS)
+    ax.tick_params(axis="x", labelrotation=45)
+    ax.grid(axis="y", color="#e6e6e3")
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig("average_magnitude_per_year.png", dpi=150)
+
+
+plot_earthquakes_per_year(data)
+plot_average_magnitude_per_year(data)
+plt.show()
