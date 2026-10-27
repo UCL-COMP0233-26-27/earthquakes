@@ -8,6 +8,10 @@ import requests
 # had to edit the format so that i could see all of the data clearly
 import json
 
+# datetime converts the timestamps into dates, matplotlib draws the graphs
+import datetime
+import matplotlib.pyplot as plt
+
 def get_data():
     # With requests, we can ask the web service for the data.
     # Can you understand the parameters we are passing here?
@@ -71,26 +75,26 @@ print(get_magnitude(data["features"][0])) #0 as first set of datain .json file
 max_magnitude, max_location = get_maximum(data)
 print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
 
-#def get_year(earthquake: Earthquake) -> float:
-#"""Given the earthquake, extract the year it occured in"""
-#timestamp = earthquake["properties"]["time"]
-  # we need to convert the timestamp into year - in need of another function
-#earthquake_date = datetime.date.fromtimestamp(timestamp)
-#return earthquake_date.year
+def get_year(earthquake: Earthquake) -> float:
+    """Given the earthquake, extract the year it occured in"""
+    timestamp = earthquake["properties"]["time"]
+# we need to convert the timestamp into year - in need of another function
+    earthquake_date = datetime.date.fromtimestamp(timestamp)
+    return earthquake_date.year
 
-#def plot_n_earthquakes_per_year(data):
+def plot_n_earthquakes_per_year(data):
     # for each year, get the number of earthquakes
     # for each earthquake, get th eyear it occured in 
     # for each year, sum up the number of earthquakes you found 
 
- #   earthquake_per_year = []
- #   date_years = list(range(2000, 2019))
-  #  for year in date_years:
- #       earthquakes_this_year = 0
- #       for earthquake in date["features"]:
- #           year_of_eq = get_year(earthquake)
- #           if year_of_eq == year:
-  #              earthquakes_this_year += 1
- #               earthquake_per_year.append(earthquakes_this_year)
+    earthquake_per_year = []
+    date_years = list(range(2000, 2019))
+    for year in date_years:
+        earthquakes_this_year = 0
+        for earthquake in data["features"]:
+            year_of_eq = get_year(earthquake)
+            if year_of_eq == year:
+                earthquakes_this_year += 1
+                earthquake_per_year.append(earthquakes_this_year)
 
-    # plot this info on a graph
+   
