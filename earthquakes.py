@@ -75,17 +75,14 @@ print(get_magnitude(data["features"][0])) #0 as first set of datain .json file
 max_magnitude, max_location = get_maximum(data)
 print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
 
-def get_year(earthquake: Earthquake) -> float:
-    """Given the earthquake, extract the year it occured in"""
-    timestamp = earthquake["properties"]["time"]
-# we need to convert the timestamp into year - in need of another function
-    earthquake_date = datetime.date.fromtimestamp(timestamp)
-    return earthquake_date.year
 
-def plot_n_earthquakes_per_year(data):
-    # for each year, get the number of earthquakes
-    # for each earthquake, get th eyear it occured in 
-    # for each year, sum up the number of earthquakes you found 
+def get_year(earthquake):
+    """Given the earthquake, extract the year it occured in."""
+    # the timestamp is in milliseconds, but fromtimestamp expects seconds
+    timestamp = earthquake["properties"]["time"]
+    earthquake_date = datetime.date.fromtimestamp(timestamp /
+ 1000)
+    return earthquake_date.year
 
     earthquake_per_year = []
     date_years = list(range(2000, 2019))
