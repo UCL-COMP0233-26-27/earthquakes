@@ -59,3 +59,7 @@ data = get_data()
 print(f"Loaded {count_earthquakes(data)}")
 max_magnitude, max_location = get_maximum(data)
 print(f"The strongest earthquake was at {max_location} with magnitude {max_magnitude}")
+
+plt.bar(range(len(get_magnitude)), get_location)
+plt.xlabel('magnitude')
+plt.ylabel('location')
